@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      driver_profiles: {
+        Row: {
+          created_at: string
+          current_latitude: number | null
+          current_longitude: number | null
+          id: string
+          is_available: boolean | null
+          license_number: string | null
+          updated_at: string
+          user_id: string
+          vehicle_number: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Insert: {
+          created_at?: string
+          current_latitude?: number | null
+          current_longitude?: number | null
+          id?: string
+          is_available?: boolean | null
+          license_number?: string | null
+          updated_at?: string
+          user_id: string
+          vehicle_number: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Update: {
+          created_at?: string
+          current_latitude?: number | null
+          current_longitude?: number | null
+          id?: string
+          is_available?: boolean | null
+          license_number?: string | null
+          updated_at?: string
+          user_id?: string
+          vehicle_number?: string
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      locations: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -44,6 +118,126 @@ export type Database = {
         }
         Relationships: []
       }
+      ride_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          ride_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          ride_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          ride_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_notifications_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      rides: {
+        Row: {
+          created_at: string
+          customer_id: string
+          distance_km: number | null
+          driver_id: string | null
+          estimated_fare: number | null
+          final_fare: number | null
+          from_latitude: number | null
+          from_location: string
+          from_longitude: number | null
+          id: string
+          notes: string | null
+          pickup_time: string
+          status: Database["public"]["Enums"]["ride_status"]
+          to_latitude: number | null
+          to_location: string
+          to_longitude: number | null
+          updated_at: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          distance_km?: number | null
+          driver_id?: string | null
+          estimated_fare?: number | null
+          final_fare?: number | null
+          from_latitude?: number | null
+          from_location: string
+          from_longitude?: number | null
+          id?: string
+          notes?: string | null
+          pickup_time: string
+          status?: Database["public"]["Enums"]["ride_status"]
+          to_latitude?: number | null
+          to_location: string
+          to_longitude?: number | null
+          updated_at?: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          distance_km?: number | null
+          driver_id?: string | null
+          estimated_fare?: number | null
+          final_fare?: number | null
+          from_latitude?: number | null
+          from_location?: string
+          from_longitude?: number | null
+          id?: string
+          notes?: string | null
+          pickup_time?: string
+          status?: Database["public"]["Enums"]["ride_status"]
+          to_latitude?: number | null
+          to_location?: string
+          to_longitude?: number | null
+          updated_at?: string
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rides_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "rides_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -52,7 +246,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      ride_status:
+        | "pending"
+        | "accepted"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
       user_role: "customer" | "rider"
+      vehicle_type: "auto" | "car" | "bike"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -180,7 +381,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ride_status: [
+        "pending",
+        "accepted",
+        "in_progress",
+        "completed",
+        "cancelled",
+      ],
       user_role: ["customer", "rider"],
+      vehicle_type: ["auto", "car", "bike"],
     },
   },
 } as const
