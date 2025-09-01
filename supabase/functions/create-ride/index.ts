@@ -1,14 +1,11 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { Resend } from "npm:resend@2.0.0";
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const resendApiKey = Deno.env.get('RESEND_API_KEY')!;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-const resend = new Resend(resendApiKey);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -79,35 +76,7 @@ serve(async (req) => {
       throw rideError;
     }
 
-    // Send email notification to customer
-    try {
-      await resend.emails.send({
-        from: 'LocalRide <onboarding@resend.dev>',
-        to: [user.email!],
-        subject: 'Ride Request Confirmed - LocalRide',
-        html: `
-          <h1>Ride Request Confirmed</h1>
-          <p>Dear ${customerProfile.full_name || 'Customer'},</p>
-          <p>Your ride request has been submitted successfully!</p>
-          
-          <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h3>Ride Details:</h3>
-            <p><strong>From:</strong> ${from_location}</p>
-            <p><strong>To:</strong> ${to_location}</p>
-            <p><strong>Pickup Time:</strong> ${new Date(pickup_time).toLocaleString()}</p>
-            <p><strong>Vehicle Type:</strong> ${vehicle_type.toUpperCase()}</p>
-            <p><strong>Estimated Fare:</strong> ₹${estimatedFare}</p>
-            ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
-          </div>
-          
-          <p>We'll notify you once a driver accepts your ride request.</p>
-          <p>Thank you for choosing LocalRide!</p>
-        `,
-      });
-    } catch (emailError) {
-      console.error('Failed to send email:', emailError);
-      // Don't fail the request if email fails
-    }
+    // Email notifications disabled
 
     // Create notification for customer
     await supabase

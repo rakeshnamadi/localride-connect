@@ -1,14 +1,11 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { Resend } from "npm:resend@2.0.0";
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const resendApiKey = Deno.env.get('RESEND_API_KEY')!;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-const resend = new Resend(resendApiKey);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -109,72 +106,7 @@ serve(async (req) => {
       throw new Error('Customer auth details not found');
     }
 
-    // Send email notifications
-    try {
-      // Email to customer
-      await resend.emails.send({
-        from: 'LocalRide <onboarding@resend.dev>',
-        to: [customerAuth.user.email!],
-        subject: 'Ride Accepted - LocalRide',
-        html: `
-          <h1>Your Ride Has Been Accepted!</h1>
-          <p>Dear ${customer.full_name || 'Customer'},</p>
-          <p>Great news! A driver has accepted your ride request.</p>
-          
-          <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h3>Ride Details:</h3>
-            <p><strong>From:</strong> ${ride.from_location}</p>
-            <p><strong>To:</strong> ${ride.to_location}</p>
-            <p><strong>Pickup Time:</strong> ${new Date(ride.pickup_time).toLocaleString()}</p>
-            <p><strong>Vehicle Type:</strong> ${ride.vehicle_type.toUpperCase()}</p>
-            <p><strong>Estimated Fare:</strong> ₹${ride.estimated_fare}</p>
-          </div>
-          
-          <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h3>Driver Details:</h3>
-            <p><strong>Name:</strong> ${driverProfile.full_name || 'Driver'}</p>
-            <p><strong>Phone:</strong> ${driverProfile.phone || 'Not provided'}</p>
-            <p><strong>Vehicle:</strong> ${driverVehicle.vehicle_type.toUpperCase()} - ${driverVehicle.vehicle_number}</p>
-          </div>
-          
-          <p>Your driver will contact you shortly. Please be ready at the pickup location on time.</p>
-          <p>Thank you for choosing LocalRide!</p>
-        `,
-      });
-
-      // Email to driver
-      await resend.emails.send({
-        from: 'LocalRide <onboarding@resend.dev>',
-        to: [user.email!],
-        subject: 'Ride Assignment Confirmed - LocalRide',
-        html: `
-          <h1>Ride Assignment Confirmed</h1>
-          <p>Dear ${driverProfile.full_name || 'Driver'},</p>
-          <p>You have successfully accepted a ride request.</p>
-          
-          <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h3>Ride Details:</h3>
-            <p><strong>From:</strong> ${ride.from_location}</p>
-            <p><strong>To:</strong> ${ride.to_location}</p>
-            <p><strong>Pickup Time:</strong> ${new Date(ride.pickup_time).toLocaleString()}</p>
-            <p><strong>Vehicle Type:</strong> ${ride.vehicle_type.toUpperCase()}</p>
-            <p><strong>Estimated Fare:</strong> ₹${ride.estimated_fare}</p>
-          </div>
-          
-          <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h3>Customer Details:</h3>
-            <p><strong>Name:</strong> ${customer.full_name || 'Customer'}</p>
-            <p><strong>Phone:</strong> ${customer.phone || 'Not provided'}</p>
-          </div>
-          
-          <p>Please contact the customer and be at the pickup location on time.</p>
-          <p>Thank you for being part of LocalRide!</p>
-        `,
-      });
-    } catch (emailError) {
-      console.error('Failed to send email:', emailError);
-      // Don't fail the request if email fails
-    }
+    // Email notifications disabled
 
     // Create notifications
     await Promise.all([

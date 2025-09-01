@@ -53,26 +53,9 @@ const CustomerDashboard = () => {
   
   const [fromLocation, setFromLocation] = useState('');
   const [toLocation, setToLocation] = useState('');
-  const [customFromLocation, setCustomFromLocation] = useState('');
-  const [customToLocation, setCustomToLocation] = useState('');
   const [pickupTime, setPickupTime] = useState('');
   const [vehicleType, setVehicleType] = useState<'auto' | 'car' | 'bike'>('car');
   const [notes, setNotes] = useState('');
-  const [useCustomLocations, setUseCustomLocations] = useState(false);
-
-  // Fetch locations for dropdown
-  const { data: locations = [] } = useQuery({
-    queryKey: ['locations'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('locations')
-        .select('*')
-        .order('name');
-      
-      if (error) throw error;
-      return data as Location[];
-    },
-  });
 
   // Fetch user's rides
   const { data: rides = [] } = useQuery({
@@ -108,8 +91,6 @@ const CustomerDashboard = () => {
       // Reset form
       setFromLocation('');
       setToLocation('');
-      setCustomFromLocation('');
-      setCustomToLocation('');
       setPickupTime('');
       setNotes('');
     },
@@ -121,17 +102,14 @@ const CustomerDashboard = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const finalFromLocation = useCustomLocations ? customFromLocation : fromLocation;
-    const finalToLocation = useCustomLocations ? customToLocation : toLocation;
-    
-    if (!finalFromLocation || !finalToLocation || !pickupTime) {
+    if (!fromLocation || !toLocation || !pickupTime) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     createRide.mutate({
-      from_location: finalFromLocation,
-      to_location: finalToLocation,
+      from_location: fromLocation,
+      to_location: toLocation,
       pickup_time: pickupTime,
       vehicle_type: vehicleType,
       notes: notes || null,
@@ -163,74 +141,28 @@ const CustomerDashboard = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex items-center space-x-2 mb-4">
-              <input
-                type="checkbox"
-                id="custom-locations"
-                checked={useCustomLocations}
-                onChange={(e) => setUseCustomLocations(e.target.checked)}
-                className="rounded"
-              />
-              <Label htmlFor="custom-locations">Enter custom locations</Label>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="from">From Location</Label>
+                <Input
+                  id="from"
+                  placeholder="Enter pickup address"
+                  value={fromLocation}
+                  onChange={(e) => setFromLocation(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="to">To Location</Label>
+                <Input
+                  id="to"
+                  placeholder="Enter destination address"
+                  value={toLocation}
+                  onChange={(e) => setToLocation(e.target.value)}
+                  required
+                />
+              </div>
             </div>
-
-            {useCustomLocations ? (
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="custom-from">From Location</Label>
-                  <Input
-                    id="custom-from"
-                    placeholder="Enter pickup address"
-                    value={customFromLocation}
-                    onChange={(e) => setCustomFromLocation(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="custom-to">To Location</Label>
-                  <Input
-                    id="custom-to"
-                    placeholder="Enter destination address"
-                    value={customToLocation}
-                    onChange={(e) => setCustomToLocation(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="from">From Location</Label>
-                  <Select value={fromLocation} onValueChange={setFromLocation} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select pickup location" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover border border-border z-50">
-                      {locations.map((location) => (
-                        <SelectItem key={location.id} value={location.name}>
-                          {location.name} - {location.address}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="to">To Location</Label>
-                  <Select value={toLocation} onValueChange={setToLocation} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select destination" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover border border-border z-50">
-                      {locations.map((location) => (
-                        <SelectItem key={location.id} value={location.name}>
-                          {location.name} - {location.address}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
