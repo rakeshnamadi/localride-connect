@@ -1,12 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import CustomerDashboard from '@/components/CustomerDashboard';
+import DriverDashboard from '@/components/DriverDashboard';
 import { Car } from 'lucide-react';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -14,7 +19,28 @@ const Index = () => {
     }
   }, [user, loading, navigate]);
 
-  if (loading) {
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!error && data) {
+          setUserProfile(data);
+        }
+        setProfileLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -49,22 +75,28 @@ const Index = () => {
       </header>
       
       <main className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold mb-4">Welcome to LocalRide</h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Your ride sharing platform is ready!
-          </p>
-          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            <div className="p-6 border rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">For Customers</h3>
-              <p className="text-muted-foreground">Book rides from auto, car, or bike drivers</p>
-            </div>
-            <div className="p-6 border rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">For Drivers</h3>
-              <p className="text-muted-foreground">Accept ride requests and earn money</p>
+        {userProfile?.user_type === 'customer' ? (
+          <CustomerDashboard />
+        ) : userProfile?.user_type === 'rider' ? (
+          <DriverDashboard />
+        ) : (
+          <div className="text-center">
+            <h2 className="text-3xl font-bold mb-4">Welcome to LocalRide</h2>
+            <p className="text-xl text-muted-foreground mb-8">
+              Your ride sharing platform is ready!
+            </p>
+            <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+              <div className="p-6 border rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">For Customers</h3>
+                <p className="text-muted-foreground">Book rides from auto, car, or bike drivers</p>
+              </div>
+              <div className="p-6 border rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">For Drivers</h3>
+                <p className="text-muted-foreground">Accept ride requests and earn money</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
