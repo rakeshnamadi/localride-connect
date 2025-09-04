@@ -16,7 +16,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [userType, setUserType] = useState<'customer' | 'rider'>('customer');
+  const [userType, setUserType] = useState<'customer' | 'driver'>('customer');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
   
@@ -255,7 +255,7 @@ const Auth = () => {
                     <Label>Account Type</Label>
                     <RadioGroup
                       value={userType}
-                      onValueChange={(value: 'customer' | 'rider') => setUserType(value)}
+                      onValueChange={(value: 'customer' | 'driver') => setUserType(value)}
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="customer" id="customer" />
@@ -265,8 +265,8 @@ const Auth = () => {
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="rider" id="rider" />
-                        <Label htmlFor="rider" className="flex items-center gap-2 cursor-pointer">
+                        <RadioGroupItem value="driver" id="driver" />
+                        <Label htmlFor="driver" className="flex items-center gap-2 cursor-pointer">
                           <Car className="h-4 w-4" />
                           Driver - Provide rides
                         </Label>

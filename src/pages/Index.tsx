@@ -77,7 +77,7 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         {userProfile?.user_type === 'customer' ? (
           <CustomerDashboard />
-        ) : userProfile?.user_type === 'rider' ? (
+        ) : userProfile?.user_type === 'driver' ? (
           <DriverDashboard />
         ) : (
           <div className="text-center">
