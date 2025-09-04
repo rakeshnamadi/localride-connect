@@ -56,6 +56,16 @@ const CustomerDashboard = () => {
   const [pickupTime, setPickupTime] = useState('');
   const [vehicleType, setVehicleType] = useState<'auto' | 'car' | 'bike'>('car');
   const [notes, setNotes] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [driverPrice, setDriverPrice] = useState('');
+
+  // Set default pickup time to current time + 10 minutes
+  useEffect(() => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 10);
+    setPickupTime(now.toISOString().slice(0, 16));
+  }, []);
 
   // Fetch user's rides
   const { data: rides = [] } = useQuery({
@@ -91,8 +101,13 @@ const CustomerDashboard = () => {
       // Reset form
       setFromLocation('');
       setToLocation('');
-      setPickupTime('');
+      const now = new Date();
+      now.setMinutes(now.getMinutes() + 10);
+      setPickupTime(now.toISOString().slice(0, 16));
       setNotes('');
+      setMinPrice('');
+      setMaxPrice('');
+      setDriverPrice('');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to create ride request');
@@ -102,8 +117,22 @@ const CustomerDashboard = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!fromLocation || !toLocation || !pickupTime) {
+    if (!fromLocation || !toLocation || !pickupTime || !minPrice || !maxPrice || !driverPrice) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const minPriceNum = parseFloat(minPrice);
+    const maxPriceNum = parseFloat(maxPrice);
+    const driverPriceNum = parseFloat(driverPrice);
+
+    if (minPriceNum >= maxPriceNum) {
+      toast.error('Maximum price must be greater than minimum price');
+      return;
+    }
+
+    if (driverPriceNum < minPriceNum || driverPriceNum > maxPriceNum) {
+      toast.error('Driver price must be between minimum and maximum price');
       return;
     }
 
@@ -113,6 +142,9 @@ const CustomerDashboard = () => {
       pickup_time: pickupTime,
       vehicle_type: vehicleType,
       notes: notes || null,
+      min_price: minPriceNum,
+      max_price: maxPriceNum,
+      driver_price: driverPriceNum,
     });
   };
 
@@ -203,6 +235,62 @@ const CustomerDashboard = () => {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-base font-semibold">Price Bidding</Label>
+                <p className="text-sm text-muted-foreground">Set your price range for this ride</p>
+              </div>
+              
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="min-price">Minimum Price (₹)</Label>
+                  <Input
+                    id="min-price"
+                    type="number"
+                    placeholder="100"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    min="0"
+                    step="10"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="max-price">Maximum Price (₹)</Label>
+                  <Input
+                    id="max-price"
+                    type="number"
+                    placeholder="200"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    min="0"
+                    step="10"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="driver-price">Price Shown to Driver (₹)</Label>
+                  <Input
+                    id="driver-price"
+                    type="number"
+                    placeholder="150"
+                    value={driverPrice}
+                    onChange={(e) => setDriverPrice(e.target.value)}
+                    min="0"
+                    step="10"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="bg-muted/50 p-3 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>How it works:</strong> Drivers will see your offered price ({driverPrice ? `₹${driverPrice}` : '₹0'}). 
+                  You'll pay between ₹{minPrice || '0'} - ₹{maxPrice || '0'} based on demand and availability.
+                </p>
               </div>
             </div>
 
