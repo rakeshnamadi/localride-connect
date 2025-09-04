@@ -108,13 +108,12 @@ const Auth = () => {
         // Continue even if this fails
       }
 
-      const redirectUrl = `${window.location.origin}/`;
+      
       
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
             user_type: userType,
@@ -133,7 +132,7 @@ const Auth = () => {
       }
 
       if (data.user) {
-        toast.success('Account created successfully! Please check your email to verify your account.');
+        toast.success('Account created successfully! You can now sign in.');
         setActiveTab('login');
         setEmail('');
         setPassword('');
