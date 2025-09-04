@@ -70,6 +70,11 @@ const Auth = () => {
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Invalid email or password');
+        } else if (error.message.includes('Email not confirmed')) {
+          // Allow unconfirmed emails to proceed
+          toast.success('Signed in successfully!');
+          window.location.href = '/';
+          return;
         } else {
           toast.error(error.message);
         }
