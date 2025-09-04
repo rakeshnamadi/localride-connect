@@ -73,7 +73,7 @@ const Auth = () => {
         } else if (error.message.includes('Email not confirmed')) {
           // Allow unconfirmed emails to proceed
           toast.success('Signed in successfully!');
-          window.location.href = '/';
+          navigate('/');
           return;
         } else {
           toast.error(error.message);
@@ -83,8 +83,7 @@ const Auth = () => {
 
       if (data.user) {
         toast.success('Signed in successfully!');
-        // Force page reload
-        window.location.href = '/';
+        navigate('/');
       }
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign in');
