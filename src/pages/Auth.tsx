@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Car, User } from 'lucide-react';
+import CustDashboard from "@/components/CustomerDashboard";
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -70,7 +71,12 @@ const Auth = () => {
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Invalid email or password');
-        } else {
+        } else if (error.message.includes('Email not confirmed')) {
+          // Allow unconfirmed emails to proceed
+          toast.success('Signed in successfully!');
+          navigate('/customer-dashboard');
+            return;
+          } else {
           toast.error(error.message);
         }
         return;
@@ -78,8 +84,7 @@ const Auth = () => {
 
       if (data.user) {
         toast.success('Signed in successfully!');
-        // Force page reload
-        window.location.href = '/';
+        navigate('/customer-dashboard');
       }
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign in');
